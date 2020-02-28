@@ -1,0 +1,5 @@
+- fix handle table, determine whether to support fixed size handle table
+- cmake
+- tests
+- update readme
+

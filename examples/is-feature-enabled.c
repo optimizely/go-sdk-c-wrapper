@@ -10,7 +10,7 @@
  *       Revision: none
  *       Compiler: gcc
  *
- *         Author: Ola Nordstrom (ola.nordstrom@optimizely.com),
+ *         Author: Ola Nordstrom (ola.nordstrom@optimizely.com)
  *   Organization: Optimizely 
  *
  * =====================================================================================
@@ -22,17 +22,23 @@
 #include <optimizely/optimizely-sdk.h>
 
 int main() {
-    /* initialization variables */
-    char *sdkkey = "YOUR SDK KEY";
+    char *sdkkey = getenv("OPTIMIZELY_SDKKEY"); // "YOUR SDK KEY";
     /* the feature we're checking */
-    char *feature_name = "SOME USER ID";
-
+    char *feature_name = getenv("OPTIMIZELY_FEATURE_NAME"); // "SOME FEATURE NAME";
     /* the optimizely end user id */
-    char *user_id = "SOME USER ID";
+    char *user_id = getenv("OPTIMIZELY_END_USER_ID"); // "OPTIMIZELY END USER ID";
+
+    if (sdkkey == NULL) {
+        printf("no SDKKEY available\n");
+        return -1;
+    }
 
 	int handle = optimizely_sdk_client(sdkkey);
 	int enabled = optimizely_sdk_is_feature_enabled(handle, feature_name, user_id);
+
 	printf("the feature: %s is enabled: %d\n", feature_name, enabled);
+
+    optimizely_sdk_delete_client(handle); // cleanup
 
     return 0;
 }

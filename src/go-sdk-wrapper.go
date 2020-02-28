@@ -6,12 +6,13 @@ package main
 import "C"
 
 import (
+	"errors"
 	optly "github.com/optimizely/go-sdk"
 	"github.com/optimizely/go-sdk/pkg/client"
 	"github.com/optimizely/go-sdk/pkg/entities"
-	//"math/rand"
-	"errors"
+	"math/rand"
 	"sync"
+	"time"
 	"unsafe"
 )
 
@@ -27,7 +28,7 @@ type optimizelyClientMap struct {
 	lock *sync.RWMutex
 	m    map[int32]*client.OptimizelyClient
 	//rand *Rand figure this out later
-	rand int32
+	randSource *rand.Rand
 }
 
 var (
@@ -42,10 +43,11 @@ func init() {
 
 //export optimizely_sdk_init
 func optimizely_sdk_init() uint32 {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	optlyClients = &optimizelyClientMap{
-		lock: new(sync.RWMutex),
-		m:    make(map[int32]*client.OptimizelyClient),
-		rand: 0,
+		lock:       new(sync.RWMutex),
+		m:          make(map[int32]*client.OptimizelyClient),
+		randSource: r,
 	}
 	return 0
 }
@@ -71,14 +73,35 @@ func optimizely_sdk_client(sdkkey *C.char) int32 {
 		optlyErr = err
 		return -1
 	}
-	optlyClients.rand = optlyClients.rand + 1
-	optlyClients.m[optlyClients.rand] = c
+	handle := optlyClients.randSource.Int31()
+	if _, ok := optlyClients.m[handle]; ok {
+		// try one more time
+		handle = optlyClients.randSource.Int31()
+		if _, ok := optlyClients.m[handle]; ok {
+			panic("unable to insert into handle map")
+		}
+	}
+	optlyClients.m[handle] = c
 	optlyClients.lock.Unlock()
-	return optlyClients.rand
+	return handle
+}
+
+func optimizelySdkClient(sdkkey string) int32 {
+	s := C.CString(sdkkey)
+	rv := optimizely_sdk_client(s)
+	C.free(unsafe.Pointer(s))
+	return rv
+}
+
+//export optimizely_sdk_delete_client
+func optimizely_sdk_delete_client(handle int32) {
+	optlyClients.lock.Lock()
+	delete(optlyClients.m, handle)
+	optlyClients.lock.Unlock()
 }
 
 //export optimizely_sdk_is_feature_enabled
-func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, user *C.char) int {
+func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, user *C.char) int32 {
 	optlyClients.lock.RLock()
 	optlyClient, ok := optlyClients.m[handle]
 	optlyClients.lock.RUnlock()
@@ -100,6 +123,15 @@ func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, user 
 	} else {
 		return 0
 	}
+}
+
+func optimizelySdkIsFeatureEnabled(handle int32, featureName string, user string) int32 {
+	feature_name := C.CString(featureName)
+	_user := C.CString(user)
+	rv := optimizely_sdk_is_feature_enabled(handle, feature_name, _user)
+	C.free(unsafe.Pointer(feature_name))
+	C.free(unsafe.Pointer(_user))
+	return rv
 }
 
 //export optimizely_sdk_get_feature_variable_string

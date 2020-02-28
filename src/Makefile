@@ -10,6 +10,9 @@ all: ${LIB} install
 ${LIB}: ${SRC}
 	${CC} ${CC_OPTS} -o $@ $^
 
+test:
+	go test 
+
 .PHONY: install
 install:
 	cp ${HEADER} ../optimizely
