@@ -21,22 +21,23 @@
 
 #include <optimizely/optimizely-sdk.h>
 
-int main() {
-    char *sdkkey = getenv("OPTIMIZELY_SDKKEY"); // "YOUR SDK KEY";
-    char *feature_name = getenv("OPTIMIZELY_FEATURE_NAME"); // "SOME FEATURE NAME";
-    char *user_id = getenv("OPTIMIZELY_END_USER_ID"); // "OPTIMIZELY END USER ID";
+int main(int argc, char *argv[])
+{
+	char *sdkkey = getenv("OPTIMIZELY_SDKKEY"); // "YOUR SDK KEY";
+	char *feature_name = getenv("OPTIMIZELY_FEATURE_NAME"); // "SOME FEATURE NAME";
+	char *user_id = getenv("OPTIMIZELY_END_USER_ID"); // "OPTIMIZELY END USER ID";
 
-    if (sdkkey == NULL) {
-        printf("no SDKKEY available\n");
-        return -1;
-    }
+	if (sdkkey == NULL) {
+		printf("no SDKKEY available\n");
+		return -1;
+	}
 
 	int handle = optimizely_sdk_client(sdkkey);
 	int enabled = optimizely_sdk_is_feature_enabled(handle, feature_name, user_id);
 
 	printf("the feature: %s is enabled: %d\n", feature_name, enabled);
 
-    optimizely_sdk_delete_client(handle); // cleanup
+	optimizely_sdk_delete_client(handle); // cleanup
 
-    return 0;
+	return 0;
 }

@@ -50,3 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+src/optimizely-sdk.h
+examples/is-feature-enabled
+optimizely/optimizely-sdk.h
+.envrc

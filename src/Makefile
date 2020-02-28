@@ -10,6 +10,7 @@ all: ${LIB} install
 ${LIB}: ${SRC}
 	${CC} ${CC_OPTS} -o $@ $^
 
+.PHONY: test
 test:
 	go test 
 
