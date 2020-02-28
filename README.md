@@ -16,7 +16,7 @@ cd src && make
 
 ### Instantiation
 
-Include the headerfile and initialize the SDK to be given an SDK handle to use in subsequent calls.
+Include the headerfile and initialize the SDK with an SDK Key. The returned handle should be used in subsequent calls.
 ```
 #include <optimizely/optimizely-sdk.h>
 . . .
@@ -29,6 +29,8 @@ To see if a feature has been enabled initialize the SDK then call `is_feature_en
 ```
 optimizely_sdk_is_feature_enabled(handle, "<feature name>", "oeu1383080393924r0.5047421827912331");
 ```
+
+For a full example see [examples/is-feature-enabled.c](https://github.com/optimizely/c-sdk/blob/master/examples/is-feature-enabled.c).
 
 ## Credits
 
