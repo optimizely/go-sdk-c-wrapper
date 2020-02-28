@@ -16,18 +16,9 @@ import (
 	"unsafe"
 )
 
-// export
-type OptimizelyClientHandleId uint32
-
-// and interface that generates a unique uint64 handle
-type handleIdMaker interface {
-	Uint64() uint64
-}
-
 type optimizelyClientMap struct {
-	lock *sync.RWMutex
-	m    map[int32]*client.OptimizelyClient
-	//rand *Rand figure this out later
+	lock       *sync.RWMutex
+	m          map[int32]*client.OptimizelyClient
 	randSource *rand.Rand
 }
 

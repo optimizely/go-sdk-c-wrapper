@@ -1,22 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 )
 
-func testClientInit(t *testing.B) {
+func TestClientInit(t *testing.T) {
 	if optimizely_sdk_init() != 0 {
 		t.Fatal("Failed to initialize the SDK")
 	}
 
 	c1 := optimizelySdkClient("some fake key")
 	c2 := optimizelySdkClient("some fake key")
-	if c1 != c2 {
+	fmt.Printf("c1: %v c2: %v\n", c1, c2)
+	if c1 == c2 {
 		t.Fatal("different client instances not returned")
 	}
 }
 
-func testClientDelete(t *testing.B) {
+func TestClientDelete(t *testing.T) {
 	if optimizely_sdk_init() != 0 {
 		t.Fatal("Failed to initialize the SDK")
 	}
