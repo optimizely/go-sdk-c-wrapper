@@ -1,31 +1,37 @@
 # Optimizely C SDK
 
+This repository houses an *Unsupported* C SDK for use with Optimizely Full Stack and Optimizely Rollouts.
+
 ## Installation
 
-### Install from github:
-
-TODO
+Download then build the SDK as shown below.
 
 ### Install from source:
 
-TODO
+```
+cd src && make
+```
 
 ## Usage
 
 ### Instantiation
 
+Include the headerfile and initialize the SDK to be given an SDK handle to use in subsequent calls.
 ```
-TODO
+#include <optimizely/optimizely-sdk.h>
+. . .
+int handle = optimizely_sdk_client("<sdk key>");
 ```
 
 ### Feature Rollouts
 
+To see if a feature has been enabled initialize the SDK then call `is_feature_enabled` function.
 ```
-TODO
+optimizely_sdk_is_feature_enabled(handle, "<feature name>", "oeu1383080393924r0.5047421827912331");
 ```
 
 ## Credits
 
-This software is distributed with code from the following open source projects:
+This software is used with additional code that is separately downloaded by you. These components are subject to their own license terms which you should review carefully.
 
-TODO
+Golang (c) 2009 The Go Authors License https://github.com/golang/go
