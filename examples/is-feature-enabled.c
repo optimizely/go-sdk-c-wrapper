@@ -23,9 +23,7 @@
 
 int main() {
     char *sdkkey = getenv("OPTIMIZELY_SDKKEY"); // "YOUR SDK KEY";
-    /* the feature we're checking */
     char *feature_name = getenv("OPTIMIZELY_FEATURE_NAME"); // "SOME FEATURE NAME";
-    /* the optimizely end user id */
     char *user_id = getenv("OPTIMIZELY_END_USER_ID"); // "OPTIMIZELY END USER ID";
 
     if (sdkkey == NULL) {
