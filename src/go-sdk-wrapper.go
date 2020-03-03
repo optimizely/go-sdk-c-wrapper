@@ -2,6 +2,24 @@ package main
 
 /*
 #include <stdlib.h>
+//#include "user-attributes.h"
+
+union optimizely_attribute {
+    _Bool bdata;
+    char *sdata;
+    float fdata;
+};
+
+typedef struct optimizely_user_attribute {
+    char *name;
+    _Bool type; // 1 = bool, 2 = char, 3 = float
+    union optimizely_attribute attr;
+} optimzely_user_attribute;
+
+typedef struct optimizely_user_attributes{
+    char *id;
+    struct optimizely_user_attribute *user_attribute_list;
+} optimizely_user_attributes;
 */
 import "C"
 
@@ -92,7 +110,7 @@ func optimizely_sdk_delete_client(handle int32) {
 }
 
 //export optimizely_sdk_is_feature_enabled
-func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, user *C.char) int32 {
+func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, attributes_list C.struct_optimizely_user_attributes) int32 {
 	optlyClients.lock.RLock()
 	optlyClient, ok := optlyClients.m[handle]
 	optlyClients.lock.RUnlock()
@@ -101,7 +119,9 @@ func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, user 
 		return -1
 	}
 
-	u := entities.UserContext{ID: C.GoString(user)}
+	// TODO loop through the attributes in the attributes_list and initialize the UserContext Attributes map
+	u := entities.UserContext{ID: C.GoString(attributes_list.id)}
+
 	enabled, err := optlyClient.IsFeatureEnabled(C.GoString(feature_name), u)
 
 	if err != nil {
@@ -116,12 +136,19 @@ func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, user 
 	}
 }
 
-func optimizelySdkIsFeatureEnabled(handle int32, featureName string, user string) int32 {
+func optimizelySdkIsFeatureEnabled(handle int32, featureName string, userCtx entities.UserContext) int32 {
 	feature_name := C.CString(featureName)
-	_user := C.CString(user)
-	rv := optimizely_sdk_is_feature_enabled(handle, feature_name, _user)
+	user := C.CString(userCtx.ID)
+	attribs := C.struct_optimizely_user_attributes{
+		id:                  user,
+		user_attribute_list: nil,
+	}
+
+	// TODO loop through the user_context and create the rest of the attribs
+	rv := optimizely_sdk_is_feature_enabled(handle, feature_name, attribs)
+
 	C.free(unsafe.Pointer(feature_name))
-	C.free(unsafe.Pointer(_user))
+	C.free(unsafe.Pointer(user))
 	return rv
 }
 
