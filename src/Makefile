@@ -12,7 +12,7 @@ ${LIB}: ${SRC}
 
 .PHONY: test
 test:
-	go test 
+	go test -v
 
 .PHONY: install
 install:

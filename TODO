@@ -1,5 +1,7 @@
+- test, test, test
 - fix handle table, determine whether to support fixed size handle table
+- consider uthash for user context structure
 - cmake
-- tests
 - update readme
+- and more tests, no really!
 
