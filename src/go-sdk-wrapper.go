@@ -526,8 +526,6 @@ func optimizelySdkGetFeatureVariable(handle int32, featureKey string, variableKe
 	return str, str2, e
 }
 
-// func (o *OptimizelyClient) Activate(experimentKey string, userContext entities.UserContext) (result string, err error) {
-
 //export optimizely_sdk_activate
 func optimizely_sdk_activate(handle int32, experiment_key *C.char, attribs C.struct_optimizely_user_attributes, err **C.char) *C.char {
 	optlyClients.lock.RLock()
@@ -575,6 +573,37 @@ func optimizelySdkActivate(handle int32, experimentKey string, userCtx entities.
 	C.free(unsafe.Pointer(s))
 
 	return str, e
+}
+
+//export optimizely_sdk_get_enabled_features
+func optimizely_sdk_get_enabled_features(handle int32, attribs C.struct_optimizely_user_attributes, count *C.int, err **C.char) **C.char {
+	optlyClients.lock.RLock()
+	optlyClient, ok := optlyClients.m[handle]
+	optlyClients.lock.RUnlock()
+	if !ok {
+		cstr := C.CString("no client exists with the specified handle id") // this allocates a string, caller must free it
+		*err = cstr
+		return nil
+	}
+
+	// TODO get rest of the attributes
+	u := entities.UserContext{ID: C.GoString(attribs.id)}
+	featureList, e := optlyClient.GetEnabledFeatures(u)
+	if e != nil {
+		*err = C.CString(e.Error())
+		return nil
+	}
+	*err = nil
+
+	cArr := C.malloc(C.size_t(len(featureList)) * C.size_t(unsafe.Sizeof(uintptr(0))))
+	a := (*[1<<30 - 1]*C.char)(cArr) // TODO, not safe but works - https://stackoverflow.com/questions/41492071/how-do-i-convert-a-go-array-of-strings-to-a-c-array-of-strings, https://stackoverflow.com/questions/53238602/accessing-c-array-in-golang
+
+	for idx, substring := range featureList {
+		a[idx] = C.CString(substring)
+	}
+
+	*count = C.int(len(featureList)) // return the count
+	return (**C.char)(cArr)          // caller must free
 }
 
 func optimizely_sdk_close(handle int32) {
