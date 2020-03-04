@@ -12,19 +12,15 @@ union optimizely_attribute {
 
 typedef struct optimizely_user_attribute {
     char *name;
-    _Bool type; // 1 = bool, 2 = char, 3 = float
-    union optimizely_attribute attr;
+    _Bool var_type; // 1 = bool, 2 = char, 3 = float
+    void *data;
 } optimzely_user_attribute;
 
 typedef struct optimizely_user_attributes{
     char *id;
-    struct optimizely_user_attribute *user_attribute_list;
+    int num_attributes;
+    struct optimizely_user_attribute **user_attribute_list;
 } optimizely_user_attributes;
-
-typedef struct optimizely_sdk_feature_variable_boolean {
-	char *err;
-	_Bool rv;
-} optimizely_sdk_feature_variable_boolean;
 */
 import "C"
 
@@ -596,7 +592,13 @@ func optimizely_sdk_get_enabled_features(handle int32, attribs C.struct_optimize
 	*err = nil
 
 	cArr := C.malloc(C.size_t(len(featureList)) * C.size_t(unsafe.Sizeof(uintptr(0))))
-	a := (*[1<<30 - 1]*C.char)(cArr) // TODO, not safe but works - https://stackoverflow.com/questions/41492071/how-do-i-convert-a-go-array-of-strings-to-a-c-array-of-strings, https://stackoverflow.com/questions/53238602/accessing-c-array-in-golang
+
+	a := (*[1<<30 - 1]*C.char)(cArr) // a is a pointer to a the c array
+
+	// Confused? See
+	// https://stackoverflow.com/questions/48756732/what-does-1-30c-yourtype-do-exactly-in-cgo
+	// https://stackoverflow.com/questions/41492071/how-do-i-convert-a-go-array-of-strings-to-a-c-array-of-strings
+	// https://stackoverflow.com/questions/53238602/accessing-c-array-in-golang
 
 	for idx, substring := range featureList {
 		a[idx] = C.CString(substring)
@@ -604,6 +606,106 @@ func optimizely_sdk_get_enabled_features(handle int32, attribs C.struct_optimize
 
 	*count = C.int(len(featureList)) // return the count
 	return (**C.char)(cArr)          // caller must free
+}
+
+// this only returns the names, not the values
+//export optimizely_sdk_get_all_feature_variables
+func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char, attribs C.struct_optimizely_user_attributes, enabled *C.int, count *C.int, err **C.char) **C.char {
+	optlyClients.lock.RLock()
+	optlyClient, ok := optlyClients.m[handle]
+	optlyClients.lock.RUnlock()
+	if !ok {
+		cstr := C.CString("no client exists with the specified handle id") // this allocates a string, caller must free it
+		*err = cstr
+		return nil
+	}
+
+	// TODO get rest of the attributes
+	u := entities.UserContext{ID: C.GoString(attribs.id)}
+	bEnabled, varMap, e := optlyClient.GetAllFeatureVariables(C.GoString(feature_key), u)
+	if e != nil {
+		*err = C.CString(e.Error())
+		return nil
+	}
+	if bEnabled {
+		*enabled = 1
+	}
+
+	/* now allocate the number of necessary structs and set the data */
+	cArr := C.malloc(C.size_t(len(varMap)) * C.size_t(unsafe.Sizeof(uintptr(0))))
+
+	a := (*[1<<30 - 1]*C.char)(cArr) // a is a pointer to a the c array
+
+	// Confused? See
+	// https://stackoverflow.com/questions/48756732/what-does-1-30c-yourtype-do-exactly-in-cgo
+	// https://stackoverflow.com/questions/41492071/how-do-i-convert-a-go-array-of-strings-to-a-c-array-of-strings
+	// https://stackoverflow.com/questions/53238602/accessing-c-array-in-golang
+
+	i := 0
+	for key := range varMap {
+		a[i] = C.CString(key)
+		i++
+	}
+
+	*count = C.int(len(varMap)) // return the count
+	return (**C.char)(cArr)     // caller must free
+}
+
+//func (o *OptimizelyClient) Track(eventKey string, userContext entities.UserContext, eventTags map[string]interface{}) (err error) {
+
+//export optimizely_sdk_track
+func optimizely_sdk_track(handle int32, event_key *C.char, attribs C.struct_optimizely_user_attributes, value *C.float) *C.char {
+	optlyClients.lock.RLock()
+	optlyClient, ok := optlyClients.m[handle]
+	optlyClients.lock.RUnlock()
+	if !ok {
+		cstr := C.CString("no client exists with the specified handle id") // this allocates a string, caller must free it
+		return cstr
+	}
+
+	// TODO get rest of the attributes
+	u := entities.UserContext{ID: C.GoString(attribs.id)}
+
+	eventTags := map[string]interface{}{}
+	if value != nil {
+		eventTags["value"] = *value
+	}
+
+	e := optlyClient.Track(C.GoString(event_key), u, eventTags)
+	if e != nil {
+		return C.CString(e.Error())
+	}
+
+	return nil
+}
+
+func optimizelySdkGetFeatureVariableStringTODO(handle int32, featureKey string, variableKey string, userCtx entities.UserContext) (string, error) {
+	feature_name := C.CString(featureKey)
+	variable_key := C.CString(variableKey)
+	user := C.CString(userCtx.ID)
+	attribs := C.struct_optimizely_user_attributes{
+		id:                  user,
+		user_attribute_list: nil,
+	}
+
+	// TODO loop through the user_context and create the rest of the attribs
+	var err *C.char
+	var e error
+	s := optimizely_sdk_get_feature_variable_string(handle, feature_name, variable_key, attribs, &err)
+	if err != nil {
+		e = errors.New(C.GoString(err))
+	} else {
+		e = nil
+	}
+
+	C.free(unsafe.Pointer(feature_name))
+	C.free(unsafe.Pointer(variable_key))
+	C.free(unsafe.Pointer(user))
+
+	str := C.GoString(s)
+	C.free(unsafe.Pointer(s))
+
+	return str, e
 }
 
 func optimizely_sdk_close(handle int32) {
