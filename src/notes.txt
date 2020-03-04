@@ -1,0 +1,25 @@
+## TODO Functions
+- GetAllFeatureVariables(featureKey string, userContext entities.UserContext) : bool, map[string]interface{}, error
+  Needed, will need to return a table mapping char * → char *, bool, ...
+- GetEnabledFeatures(userContext entities.UserContext) : []string, error
+  Needed, just a list of strings to return along with err
+- GetOptimizelyConfig() : *config.OptimizelyConfig
+  Not needed… but how hard is it, just a struct with string and some string maps
+- Track(eventKey string, userContext entities.UserContext, eventTags map[string]interface{}) : error
+  needed.
+
+## Not Needed
+- OnTrack(callback func(eventKey string, userContext entities.UserContext, eventTags map[string]interface{}, conversionEvent event.ConversionEvent)) : int, error
+- RemoveOnTrack(id int) : error
+
+
+DONE
+- Activate(experimentKey string, userContext entities.UserContext) : string, error
+- IsFeatureEnabled(featureKey string, userContext entities.UserContext) : bool, error
+- GetFeatureVariableString(featureKey, variableKey string, userContext entities.UserContext) : string, error
+- GetFeatureVariableBoolean(featureKey, variableKey string, userContext entities.UserContext) : bool, error
+- GetFeatureVariableDouble(featureKey, variableKey string, userContext entities.UserContext) : float64, error
+- GetFeatureVariableInteger(featureKey, variableKey string, userContext entities.UserContext) : int, error
+- GetVariation(experimentKey string, userContext entities.UserContext) : string, error
+- GetFeatureVariable(featureKey, variableKey string, userContext entities.UserContext) : string, entities.VariableType, error
+- Close()
