@@ -12,14 +12,14 @@ union optimizely_attribute {
 
 typedef struct optimizely_user_attribute {
     char *name;
-    _Bool var_type; // 1 = bool, 2 = char, 3 = float
+    int var_type; // 1 = string, 2 = bool, 3 = float, 4 = int
     void *data;
 } optimzely_user_attribute;
 
 typedef struct optimizely_user_attributes{
     char *id;
     int num_attributes;
-    struct optimizely_user_attribute **user_attribute_list;
+    struct optimizely_user_attribute *user_attribute_list;
 } optimizely_user_attributes;
 */
 import "C"
@@ -113,6 +113,61 @@ func optimizely_sdk_delete_client(handle int32) {
 	optlyClients.lock.Lock()
 	delete(optlyClients.m, handle)
 	optlyClients.lock.Unlock()
+}
+
+// returns the UserContext as a go object
+func convertUserContext(attribs *C.struct_optimizely_user_attributes) (*entities.UserContext, error) {
+	if attribs == nil {
+		return nil, errors.New("convertUserContext called with nil attribs")
+	}
+
+	listPtr := (*C.optimizely_user_attributes)(unsafe.Pointer(attribs))
+
+	u := entities.UserContext{ID: C.GoString(attribs.id), Attributes: map[string]interface{}{}}
+
+	attrCount := (int)(listPtr.num_attributes)
+	fmt.Printf("attrCount: %d\n", attrCount)
+
+	//p := (*[1 << 30]C._profile)(unsafe.Pointer(profiles.profile))[:numProfiles:numProfiles]
+	//pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(listPtr.user_attribute_list))[:2:2]
+	pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(listPtr.user_attribute_list))[:attrCount:attrCount]
+	//pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(attribola))
+
+	for i := 0; i < int(attrCount); i++ {
+		name := C.GoString(pola[i].name)
+		fmt.Printf("i: %d attr.name: %s\n", i, name)
+
+		t := pola[i].var_type
+		fmt.Printf("t: %d\n", t)
+		switch t {
+		case 1: // string
+			value := C.GoString((*C.char)(pola[i].data))
+			fmt.Println("value:", value)
+			u.Attributes[name] = value //C.GoString((*C.char)(pola[i].data))
+		case 2: // bool
+			//value := ((*C.Bool)(pola[i].data))
+			value := ((*C.int)(pola[i].data))
+			if *value == 0 {
+				u.Attributes[name] = false
+			} else {
+				u.Attributes[name] = true
+			}
+			fmt.Println("value:", *value)
+		case 3: // float
+			value := ((*C.float)(pola[i].data))
+			u.Attributes[name] = *value
+			fmt.Println("value:", *value)
+		case 4: // int
+			value := ((*C.int)(pola[i].data))
+			u.Attributes[name] = *value
+			fmt.Println("value:", *value)
+		default:
+			fmt.Printf("Unknown type specified: %d, skipping\n", t)
+		}
+		fmt.Println("map:", u.Attributes)
+	}
+	fmt.Printf("Here's the map:\n%+v\n", u.Attributes)
+	return &u, nil
 }
 
 //export optimizely_sdk_is_feature_enabled
@@ -610,7 +665,7 @@ func optimizely_sdk_get_enabled_features(handle int32, attribs C.struct_optimize
 
 // this only returns the names, not the values
 //export optimizely_sdk_get_all_feature_variables
-func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char, attribs C.struct_optimizely_user_attributes, enabled *C.int, count *C.int, err **C.char) **C.char {
+func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char, attribs *C.struct_optimizely_user_attributes, attribola *C.struct_optimizely_user_attribute, enabled *C.int, count *C.int, err **C.char) **C.char {
 	optlyClients.lock.RLock()
 	optlyClient, ok := optlyClients.m[handle]
 	optlyClients.lock.RUnlock()
@@ -620,9 +675,14 @@ func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char,
 		return nil
 	}
 
-	// TODO get rest of the attributes
-	u := entities.UserContext{ID: C.GoString(attribs.id)}
-	bEnabled, varMap, e := optlyClient.GetAllFeatureVariables(C.GoString(feature_key), u)
+	u, e := convertUserContext(attribs)
+	if e != nil {
+		cstr := C.CString(e.Error())
+		*err = cstr
+		return nil
+	}
+
+	bEnabled, varMap, e := optlyClient.GetAllFeatureVariables(C.GoString(feature_key), *u)
 	if e != nil {
 		*err = C.CString(e.Error())
 		return nil
@@ -650,8 +710,6 @@ func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char,
 	*count = C.int(len(varMap)) // return the count
 	return (**C.char)(cArr)     // caller must free
 }
-
-//func (o *OptimizelyClient) Track(eventKey string, userContext entities.UserContext, eventTags map[string]interface{}) (err error) {
 
 //export optimizely_sdk_track
 func optimizely_sdk_track(handle int32, event_key *C.char, attribs C.struct_optimizely_user_attributes, value *C.float) *C.char {
