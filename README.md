@@ -34,6 +34,6 @@ For a full example see [examples/is-feature-enabled.c](https://github.com/optimi
 
 ## Credits
 
-This software is used with additional code that is separately downloaded by you. These components are subject to their own license terms which you should review carefully.
+This software is built with the following software.
 
-Golang (c) 2009 The Go Authors License https://github.com/golang/go
+* Golang (c) 2009 The Go Authors License, [BSD 3-Clause](https://golang.org/LICENSE)
