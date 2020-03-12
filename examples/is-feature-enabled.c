@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
 	if (sdkkey == NULL) {
 		printf("no SDKKEY available\n");
-		return -1;
+		return 1;
 	}
 
 	int handle = optimizely_sdk_client(sdkkey);
@@ -71,13 +71,11 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to initialize Optimizely SDK\n");
 		return 1;
 	}
-	int errno;
-	int enabled = optimizely_sdk_is_feature_enabled(handle, feature_name, attrib, &errno);
-	printf("errno: %d\n", errno);
-	if (errno) {
-		char *e = optimizely_sdk_get_error();
-		fprintf(stderr, "failed: %s\n", e);
-		optimizely_sdk_free(e);
+	char *err = NULL;
+	int enabled = optimizely_sdk_is_feature_enabled(handle, feature_name, &attrib, &err);
+	if (err != NULL) {
+		fprintf(stderr, "failed, error: %s\n", err);
+		optimizely_sdk_free(err);
 	}
 
 	printf("the feature: %s is enabled: %d\n", feature_name, enabled);

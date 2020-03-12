@@ -1,3 +1,19 @@
+/****************************************************************************
+ * Copyright 2020, Optimizely, Inc. and contributors                        *
+ *                                                                          *
+ * Licensed under the Apache License, Version 2.0 (the "License");          *
+ * you may not use this file except in compliance with the License.         *
+ * You may obtain a copy of the License at                                  *
+ *                                                                          *
+ *    http://www.apache.org/licenses/LICENSE-2.0                            *
+ *                                                                          *
+ * Unless required by applicable law or agreed to in writing, software      *
+ * distributed under the License is distributed on an "AS IS" BASIS,        *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ * See the License for the specific language governing permissions and      *
+ * limitations under the License.                                           *
+ ***************************************************************************/
+
 package main
 
 /*
@@ -127,69 +143,78 @@ func convertUserContext(attribs *C.struct_optimizely_user_attributes) (*entities
 
 	attrCount := (int)(listPtr.num_attributes)
 	fmt.Printf("attrCount: %d\n", attrCount)
+	if attrCount > 0 {
 
-	//p := (*[1 << 30]C._profile)(unsafe.Pointer(profiles.profile))[:numProfiles:numProfiles]
-	//pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(listPtr.user_attribute_list))[:2:2]
-	pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(listPtr.user_attribute_list))[:attrCount:attrCount]
-	//pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(attribola))
+		//p := (*[1 << 30]C._profile)(unsafe.Pointer(profiles.profile))[:numProfiles:numProfiles]
+		//pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(listPtr.user_attribute_list))[:2:2]
+		pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(listPtr.user_attribute_list))[:attrCount:attrCount]
+		//pola := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(attribola))
 
-	for i := 0; i < int(attrCount); i++ {
-		name := C.GoString(pola[i].name)
-		fmt.Printf("i: %d attr.name: %s\n", i, name)
+		for i := 0; i < int(attrCount); i++ {
+			name := C.GoString(pola[i].name)
+			fmt.Printf("i: %d attr.name: %s\n", i, name)
 
-		t := pola[i].var_type
-		fmt.Printf("t: %d\n", t)
-		switch t {
-		case 1: // string
-			value := C.GoString((*C.char)(pola[i].data))
-			fmt.Println("value:", value)
-			u.Attributes[name] = value //C.GoString((*C.char)(pola[i].data))
-		case 2: // bool
-			//value := ((*C.Bool)(pola[i].data))
-			value := ((*C.int)(pola[i].data))
-			if *value == 0 {
-				u.Attributes[name] = false
-			} else {
-				u.Attributes[name] = true
+			t := pola[i].var_type
+			fmt.Printf("t: %d\n", t)
+			switch t {
+			case 1: // string
+				value := C.GoString((*C.char)(pola[i].data))
+				fmt.Println("value:", value)
+				u.Attributes[name] = value //C.GoString((*C.char)(pola[i].data))
+			case 2: // bool
+				//value := ((*C.Bool)(pola[i].data))
+				value := ((*C.int)(pola[i].data))
+				if *value == 0 {
+					u.Attributes[name] = false
+				} else {
+					u.Attributes[name] = true
+				}
+				fmt.Println("value:", *value)
+			case 3: // float
+				value := ((*C.float)(pola[i].data))
+				u.Attributes[name] = *value
+				fmt.Println("value:", *value)
+			case 4: // int
+				value := ((*C.int)(pola[i].data))
+				u.Attributes[name] = *value
+				fmt.Println("value:", *value)
+			default:
+				fmt.Printf("Unknown type specified: %d, skipping\n", t)
 			}
-			fmt.Println("value:", *value)
-		case 3: // float
-			value := ((*C.float)(pola[i].data))
-			u.Attributes[name] = *value
-			fmt.Println("value:", *value)
-		case 4: // int
-			value := ((*C.int)(pola[i].data))
-			u.Attributes[name] = *value
-			fmt.Println("value:", *value)
-		default:
-			fmt.Printf("Unknown type specified: %d, skipping\n", t)
+			fmt.Println("map:", u.Attributes)
 		}
-		fmt.Println("map:", u.Attributes)
 	}
 	fmt.Printf("Here's the map:\n%+v\n", u.Attributes)
 	return &u, nil
 }
 
 //export optimizely_sdk_is_feature_enabled
-func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, attribs C.struct_optimizely_user_attributes, errno *C.int) int32 {
+func optimizely_sdk_is_feature_enabled(handle int32, feature_name *C.char, attribs *C.struct_optimizely_user_attributes, err **C.char) int32 {
 	optlyClients.lock.RLock()
 	optlyClient, ok := optlyClients.m[handle]
 	optlyClients.lock.RUnlock()
 	if !ok {
-		optlyErr = errors.New("no client exists with the specified handle id")
+		cstr := C.CString("no client exists with the specified handle id")
+		*err = cstr
+		return -1
+	} else {
+
+		fmt.Println("The handle is valid", handle)
+	}
+
+	u, e := convertUserContext(attribs)
+	if e != nil {
+		cstr := C.CString(e.Error())
+		*err = cstr
 		return -1
 	}
-	fmt.Printf("in optimizely_sdk_is_feature_enabled, errno is: %v derefrenced: %v\n", errno, &errno)
 
-	// TODO loop through the attributes in the attributes and initialize the UserContext Attributes map
-	u := entities.UserContext{ID: C.GoString(attribs.id)}
+	enabled, e := optlyClient.IsFeatureEnabled(C.GoString(feature_name), *u)
 
-	enabled, err := optlyClient.IsFeatureEnabled(C.GoString(feature_name), u)
-
-	if err != nil {
-		fmt.Printf("errors is not nil, it is: %v\n", err)
-		optlyErr = err
-		//		*errno = 1
+	if e != nil {
+		fmt.Printf("errors is not nil, it is: %v\n", e)
+		cstr := C.CString(e.Error())
+		*err = cstr
 		return -1
 	}
 
@@ -210,16 +235,8 @@ func optimizelySdkIsFeatureEnabled(handle int32, featureName string, userCtx ent
 
 	// TODO loop through the user_context and create the rest of the attribs
 
-	//var errno *C.int
-	/*
-		errno := C.malloc(C.sizeof_int)
-		rv := optimizely_sdk_is_feature_enabled(handle, feature_name, attribs, (*C.int)(errno))
-	*/
-
-	var errno2 C.int
-	errno2 = 0
-	//fmt.Printf("in optimizelySdkIsFeatureEnabled, errno is: %v derefrenced: %v\n", errno2, &errno2)
-	rv := optimizely_sdk_is_feature_enabled(handle, feature_name, attribs, &errno2)
+	var s *C.char
+	rv := optimizely_sdk_is_feature_enabled(handle, feature_name, &attribs, &s)
 
 	C.free(unsafe.Pointer(feature_name))
 	C.free(unsafe.Pointer(user))
@@ -712,26 +729,33 @@ func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char,
 }
 
 //export optimizely_sdk_track
-func optimizely_sdk_track(handle int32, event_key *C.char, attribs C.struct_optimizely_user_attributes, value *C.float) *C.char {
+func optimizely_sdk_track(handle int32, event_key *C.char, attribs *C.struct_optimizely_user_attributes, value *C.float, err **C.char) *C.char {
 	optlyClients.lock.RLock()
 	optlyClient, ok := optlyClients.m[handle]
 	optlyClients.lock.RUnlock()
 	if !ok {
 		cstr := C.CString("no client exists with the specified handle id") // this allocates a string, caller must free it
-		return cstr
+		*err = cstr
+		return nil
 	}
 
-	// TODO get rest of the attributes
-	u := entities.UserContext{ID: C.GoString(attribs.id)}
+	u, e := convertUserContext(attribs)
+	if e != nil {
+		cstr := C.CString(e.Error())
+		*err = cstr
+		return nil
+	}
 
 	eventTags := map[string]interface{}{}
 	if value != nil {
 		eventTags["value"] = *value
 	}
 
-	e := optlyClient.Track(C.GoString(event_key), u, eventTags)
+	e = optlyClient.Track(C.GoString(event_key), *u, eventTags)
 	if e != nil {
-		return C.CString(e.Error())
+		cstr := C.CString(e.Error())
+		*err = cstr
+		return nil
 	}
 
 	return nil
