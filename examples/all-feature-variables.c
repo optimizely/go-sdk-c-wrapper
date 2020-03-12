@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename: enabled-features.c
+ *       Filename: all-feature-variables.c
  *
  *    Description: Demo of the Optimizely SDK in C, get all features
  *
