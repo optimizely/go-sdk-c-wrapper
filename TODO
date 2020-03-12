@@ -1,7 +1,7 @@
 - test, test, test
 - fix handle table, determine whether to support fixed size handle table
-- consider uthash for user context structure
-- cmake
 - update readme
-- and more tests, no really!
+- port client_test.go and add call sdkFuncName and don't call func
+  convertUserContext(attribs *C.struct_optimizely_user_attributes)
+  (*entities.UserContext, error) and just pass in the entities
 
