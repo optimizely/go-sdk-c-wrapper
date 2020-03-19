@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
 	if (sdkkey == NULL) {
 		printf("no SDKKEY available\n");
-		return -1;
+		return 1;
 	}
 	int handle = optimizely_sdk_client(sdkkey);
 	if (handle == -1) {

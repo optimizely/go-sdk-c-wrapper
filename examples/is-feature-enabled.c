@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 	if (err != NULL) {
 		fprintf(stderr, "failed, error: %s\n", err);
 		free(err);
+		return 1;
 	}
 
 	printf("the feature: %s is enabled: %d\n", feature_name, enabled);
