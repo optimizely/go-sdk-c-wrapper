@@ -8,7 +8,7 @@
  *        Version: 1.0
  *        Created: 02/04/2020 15:31:46
  *       Revision: none
- *       Compiler: gcc
+ *       Compiler: clang
  *
  *         Author: Ola Nordstrom (ola.nordstrom@optimizely.com)
  *   Organization: Optimizely 
