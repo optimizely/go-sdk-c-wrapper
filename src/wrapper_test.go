@@ -24,10 +24,6 @@ import (
 )
 
 func TestClientInit(t *testing.T) {
-	if optimizely_sdk_init() != 0 {
-		t.Fatal("Failed to initialize the SDK")
-	}
-
 	c1 := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
 	c2 := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
 	fmt.Printf("c1: %v c2: %v\n", c1, c2)
@@ -37,10 +33,6 @@ func TestClientInit(t *testing.T) {
 }
 
 func TestClientDelete(t *testing.T) {
-	if optimizely_sdk_init() != 0 {
-		t.Fatal("Failed to initialize the SDK")
-	}
-
 	h := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
 	optimizely_sdk_delete_client(h)
 
@@ -52,10 +44,6 @@ func TestClientDelete(t *testing.T) {
 }
 
 func TestGetFeatureVariableBoolen(t *testing.T) {
-	if optimizely_sdk_init() != 0 {
-		t.Fatal("Failed to initialize the SDK")
-	}
-
 	h := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
 
 	u := entities.UserContext{ID: os.Getenv("OPTIMIZELY_END_USER_ID")}
@@ -70,10 +58,6 @@ func TestGetFeatureVariableBoolen(t *testing.T) {
 }
 
 func TestGetFeatureVariableString(t *testing.T) {
-	if optimizely_sdk_init() != 0 {
-		t.Fatal("Failed to initialize the SDK")
-	}
-
 	h := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
 
 	u := entities.UserContext{ID: os.Getenv("OPTIMIZELY_END_USER_ID")}
@@ -88,10 +72,6 @@ func TestGetFeatureVariableString(t *testing.T) {
 }
 
 func TestGetFeatureVariableDouble(t *testing.T) {
-	if optimizely_sdk_init() != 0 {
-		t.Fatal("Failed to initialize the SDK")
-	}
-
 	h := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
 
 	u := entities.UserContext{ID: os.Getenv("OPTIMIZELY_END_USER_ID")}
@@ -106,10 +86,6 @@ func TestGetFeatureVariableDouble(t *testing.T) {
 }
 
 func TestGetFeatureVariableInteger(t *testing.T) {
-	if optimizely_sdk_init() != 0 {
-		t.Fatal("Failed to initialize the SDK")
-	}
-
 	h := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
 
 	u := entities.UserContext{ID: os.Getenv("OPTIMIZELY_END_USER_ID")}
