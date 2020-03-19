@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	int enabled = optimizely_sdk_is_feature_enabled(handle, feature_name, &attrib, &err);
 	if (err != NULL) {
 		fprintf(stderr, "failed, error: %s\n", err);
-		optimizely_sdk_free(err);
+		free(err);
 	}
 
 	printf("the feature: %s is enabled: %d\n", feature_name, enabled);

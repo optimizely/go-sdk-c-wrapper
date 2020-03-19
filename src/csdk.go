@@ -18,13 +18,6 @@ package main
 
 /*
 #include <stdlib.h>
-//#include "user-attributes.h"
-
-union optimizely_attribute {
-    _Bool bdata;
-    char *sdata;
-    float fdata;
-};
 
 typedef struct optimizely_user_attribute {
     char *name;
@@ -53,8 +46,6 @@ import (
 	"unsafe"
 )
 
-var logger = logging.GetLogger("CSDK")
-
 type optimizelyClientMap struct {
 	lock       *sync.RWMutex
 	m          map[int32]*client.OptimizelyClient
@@ -63,7 +54,7 @@ type optimizelyClientMap struct {
 
 var (
 	optlyClients *optimizelyClientMap
-	optlyErr     error // track the last error
+	logger       = logging.GetLogger("CSDK")
 )
 
 func init() {
@@ -72,30 +63,13 @@ func init() {
 }
 
 //export optimizely_sdk_init
-func optimizely_sdk_init() uint32 {
+func optimizely_sdk_init() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	optlyClients = &optimizelyClientMap{
 		lock:       new(sync.RWMutex),
 		m:          make(map[int32]*client.OptimizelyClient),
 		randSource: r,
 	}
-	return 0
-}
-
-// important: caller must free error string
-//export optimizely_sdk_get_error
-func optimizely_sdk_get_error() *C.char {
-	if optlyErr != nil {
-		s := optlyErr.Error()
-		c_str := C.CString(s) // this allocates a string, caller must free it
-		return c_str
-	}
-	return nil
-}
-
-//export optimizely_sdk_free
-func optimizely_sdk_free(str *C.char) {
-	C.free(unsafe.Pointer(str))
 }
 
 //export optimizely_sdk_client
@@ -103,7 +77,6 @@ func optimizely_sdk_client(sdkkey *C.char) int32 {
 	optlyClients.lock.Lock()
 	c, err := optly.Client(C.GoString(sdkkey))
 	if err != nil {
-		optlyErr = err
 		return -1
 	}
 	handle := optlyClients.randSource.Int31()

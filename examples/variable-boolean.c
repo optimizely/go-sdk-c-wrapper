@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
 	_Bool enabled = optimizely_sdk_get_feature_variable_boolean(handle, feature_name, "boolvar", &attrib, &err);
 	if (err != NULL) {
 		fprintf(stderr, "failed: %s\n", err);
+		free(err);
 		return 1;
 	}
 	optimizely_sdk_delete_client(handle); // cleanup

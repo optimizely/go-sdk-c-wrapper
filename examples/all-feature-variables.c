@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	attrib.num_attributes = 2;
 	attrib.user_attribute_list = malloc(sizeof(struct optimizely_user_attribute)*2);
 	if (!attrib.user_attribute_list) {
-		printf("no SDKKEY available\n");
+		printf("failed to allocated attributes list\n");
 		return -1;
 	}
 	int not_true = 0;
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 	}
 	int handle = optimizely_sdk_client(sdkkey);
 	if (handle == -1) {
-		fprintf(stderr, "failed to initialize Optimizely SDK\n");
+		fprintf(stderr, "failed to create the Optimizely SDK\n");
 		return 1;
 	}
 	char *err = NULL;
@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 	char **features = optimizely_sdk_get_all_feature_variables(handle, feature_name, &attrib, &enabled, &len, &err);
 	if (err != NULL) {
 		fprintf(stderr, "failed: %s\n", err);
+		free(err);
 		return 1;
 	}
 	optimizely_sdk_delete_client(handle); // cleanup
@@ -69,7 +70,9 @@ int main(int argc, char *argv[])
 	printf("number of features: %d, enabled: %d\n", len, enabled);
 	for (int i = 0; i < len; i++) {
 		printf("feature %d: type %s\n", i, features[i]);
+		free(features[i]);
 	}
+	free(features);
 
 	return 0;
 }
