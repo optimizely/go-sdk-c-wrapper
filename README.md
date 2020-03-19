@@ -89,20 +89,24 @@ int optimizely_sdk_get_feature_variable_integer(int handle, char* feature_name, 
                                                 optimizely_user_attributes* attributes, char** error);
 
 // returns the variation for the specified experiment key and user attributes
-char* optimizely_sdk_get_variation(int handle, char* experiment_key, optimizely_user_attributes* attributes, char** error);
+char* optimizely_sdk_get_variation(int handle, char* experiment_key,
+                                   optimizely_user_attributes* attributes, char** error);
 
 // returns the feature variable for the specified feature_name and variable_key
-// the variable_type receives a string specifying the variable type, the caller must free this string
-char* optimizely_sdk_get_feature_variable(int handle, char* feature_name, char* variable_key,
-                                          optimizely_user_attributes* attributes, char** variable_type, char** error);
+// the variable_type receives a string specifying the variable type
+char* optimizely_sdk_get_feature_variable(int handle, char* feature_name,
+                                          char* variable_key, optimizely_user_attributes* attributes,
+					  char** variable_type, char** error);
 
 // activates the specified experiment_key
-char* optimizely_sdk_activate(int handle, char* experiment_key, optimizely_user_attributes* attributes, char** error);
+char* optimizely_sdk_activate(int handle, char* experiment_key,
+                              optimizely_user_attributes* attributes, char** error);
 
 // returns a list of the enabled features, the count receives the number of features returned
-char** optimizely_sdk_get_enabled_features(int handle, optimizely_user_attributes* attributes, int* count, char** error);
+char** optimizely_sdk_get_enabled_features(int handle, optimizely_user_attributes* attributes,
+                                           int* count, char** error);
 
-// returns a list of the enabled feature variables, count contains the number of feature variables returned
+// returns a list of the enabled feature variables, count contains the feature variable count
 // the caller must free all returned feature name strings
 // this only returns the names of the features 
 // to get the value call optimizely_sdk_get_feature_variable_<type>()
