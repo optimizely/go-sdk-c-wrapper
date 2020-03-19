@@ -44,7 +44,7 @@ For a full example see [examples/is-feature-enabled.c](https://github.com/optimi
 
 ## API
 
-*Important:* All strings returned by the API must be free'd by the caller.
+**Important:** All strings and string arrays returned by the API must be free'd by the caller.
 
 ```
 typedef struct optimizely_user_attribute {
@@ -95,8 +95,6 @@ char* optimizely_sdk_activate(int handle, char* experiment_key, optimizely_user_
 
 // returns a list of the enabled features, the count receives the number of features returned
 char** optimizely_sdk_get_enabled_features(int handle, optimizely_user_attributes* attributes, int* count, char** error);
-
-// this only returns the names, not the values
 
 // returns a list of the enabled feature variables, count contains the number of feature variables returned
 // the caller must free all returned feature name strings

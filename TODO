@@ -1,6 +1,5 @@
 - test, test, test
-- fix handle table, determine whether to support fixed size handle table
-- update readme
+- determine whether to support fixed size handle table
 - port client_test.go and add call sdkFuncName and don't call func
   convertUserContext(attribs *C.struct_optimizely_user_attributes)
   (*entities.UserContext, error) and just pass in the entities
