@@ -1,8 +1,8 @@
-LIB:=optimizely-sdk.so
-HEADER:=optimizely-sdk.h
-SRC:=go-sdk-wrapper.go
-CC:=go build
-CC_OPTS:=-buildmode=c-shared
+LIB := optimizely-sdk.so
+HEADER := optimizely-sdk.h
+SRC := csdk.go
+CC := go build
+CC_OPTS := -buildmode=c-shared
 
 .PHONY: all
 all: ${LIB} install
@@ -12,7 +12,7 @@ ${LIB}: ${SRC}
 
 .PHONY: test
 test:
-	go test 
+	go test -v
 
 .PHONY: install
 install:

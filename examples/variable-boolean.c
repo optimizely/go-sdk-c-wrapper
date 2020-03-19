@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename: is-feature-enabled.c
+ *       Filename: variable-boolean.c
  *
- *    Description: Demo of the Optimizely SDK in C, check to see if a feature is enabled
+ *    Description: Demo of the Optimizely SDK in C, get a feature variable boolean
  *
  *        Version: 1.0
  *        Created: 02/04/2020 15:31:46
@@ -33,24 +33,22 @@ int main(int argc, char *argv[])
 
 	if (sdkkey == NULL) {
 		printf("no SDKKEY available\n");
-		return 1;
+		return -1;
 	}
-
 	int handle = optimizely_sdk_client(sdkkey);
 	if (handle == -1) {
 		fprintf(stderr, "failed to initialize Optimizely SDK\n");
 		return 1;
 	}
 	char *err = NULL;
-	int enabled = optimizely_sdk_is_feature_enabled(handle, feature_name, &attrib, &err);
+	_Bool enabled = optimizely_sdk_get_feature_variable_boolean(handle, feature_name, "boolvar", &attrib, &err);
 	if (err != NULL) {
-		fprintf(stderr, "failed, error: %s\n", err);
-		optimizely_sdk_free(err);
+		fprintf(stderr, "failed: %s\n", err);
+		return 1;
 	}
-
-	printf("the feature: %s is enabled: %d\n", feature_name, enabled);
-
 	optimizely_sdk_delete_client(handle); // cleanup
+
+	printf("the variable: %s is enabled: %d\n", "boolvar", enabled);
 
 	return 0;
 }

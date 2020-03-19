@@ -51,6 +51,11 @@ Module.symvers
 Mkfile.old
 dkms.conf
 src/optimizely-sdk.h
-examples/is-feature-enabled
 optimizely/optimizely-sdk.h
 .envrc
+
+examples/is-feature-enabled
+examples/all-feature-variables
+examples/enabled-features
+examples/variable-boolean
+

@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename: is-feature-enabled.c
+ *       Filename: enabled-features.c
  *
- *    Description: Demo of the Optimizely SDK in C, check to see if a feature is enabled
+ *    Description: Demo of the Optimizely SDK in C, get enabled features
  *
  *        Version: 1.0
  *        Created: 02/04/2020 15:31:46
@@ -24,7 +24,6 @@
 int main(int argc, char *argv[])
 {
 	char *sdkkey = getenv("OPTIMIZELY_SDKKEY"); // "YOUR SDK KEY";
-	char *feature_name = getenv("OPTIMIZELY_FEATURE_NAME"); // "SOME FEATURE NAME";
 	char *user_id = getenv("OPTIMIZELY_END_USER_ID"); // "OPTIMIZELY END USER ID";
 
 	optimizely_user_attributes attrib = {0};
@@ -33,24 +32,25 @@ int main(int argc, char *argv[])
 
 	if (sdkkey == NULL) {
 		printf("no SDKKEY available\n");
-		return 1;
+		return -1;
 	}
-
 	int handle = optimizely_sdk_client(sdkkey);
 	if (handle == -1) {
 		fprintf(stderr, "failed to initialize Optimizely SDK\n");
 		return 1;
 	}
 	char *err = NULL;
-	int enabled = optimizely_sdk_is_feature_enabled(handle, feature_name, &attrib, &err);
+	int len;
+	char **features = optimizely_sdk_get_enabled_features(handle, &attrib, &len, &err);
 	if (err != NULL) {
-		fprintf(stderr, "failed, error: %s\n", err);
-		optimizely_sdk_free(err);
+		fprintf(stderr, "failed: %s\n", err);
+		return 1;
 	}
-
-	printf("the feature: %s is enabled: %d\n", feature_name, enabled);
-
 	optimizely_sdk_delete_client(handle); // cleanup
+
+	for (int i = 0; i < len; i++) {
+		printf("the enabled feature %d: %s\n", i, features[i]);
+	}
 
 	return 0;
 }
