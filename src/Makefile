@@ -16,6 +16,7 @@ test:
 
 .PHONY: install
 install:
+	mkdir -p ../optimizely
 	cp ${HEADER} ../optimizely
 	cp ${LIB} ../examples
 
