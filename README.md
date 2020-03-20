@@ -17,6 +17,7 @@ make
 ### Instantiation
 
 Include the headerfile and initialize the SDK with an SDK Key. The returned handle should be used in subsequent calls.
+
 ```c_cpp
 #include <optimizely/optimizely-sdk.h>
 . . .
@@ -28,6 +29,7 @@ See API for more details.
 ### Feature Rollouts
 
 To see if a feature has been enabled initialize the SDK then call `is_feature_enabled` function.
+
 ```c_cpp
 ...
 int handle = optimizely_sdk_client(sdkkey);
