@@ -8,7 +8,7 @@ Download then build the SDK as shown below.
 
 ### Install from source:
 
-```
+```makefile
 make
 ```
 
@@ -17,19 +17,21 @@ make
 ### Instantiation
 
 Include the headerfile and initialize the SDK with an SDK Key. The returned handle should be used in subsequent calls.
-```
+
+```c
 #include <optimizely/optimizely-sdk.h>
-. . .
+...
 int handle = optimizely_sdk_client("<sdk key>");
 ```
 
 See API for more details.
 
-### Feature Rollouts
+### Example: Feature Rollouts
 
 To see if a feature has been enabled initialize the SDK then call `is_feature_enabled` function.
-```
-. . .
+
+```c
+...
 int handle = optimizely_sdk_client(sdkkey);
 if (handle == -1) {
 	fprintf(stderr, "failed to initialize Optimizely SDK\n");
@@ -37,7 +39,7 @@ if (handle == -1) {
 }
 char *err = NULL;
 int enabled = optimizely_sdk_is_feature_enabled(handle, feature_name, &attrib, &err);
-. . .
+...
 ```
 
 For a full example see [examples/is-feature-enabled.c](https://github.com/optimizely/c-sdk/blob/master/examples/is-feature-enabled.c).
@@ -46,7 +48,7 @@ For a full example see [examples/is-feature-enabled.c](https://github.com/optimi
 
 **Important:** All strings and string arrays returned by the API must be free'd by the caller.
 
-```
+```c
 typedef struct optimizely_user_attribute {
 	char *name;
 	int var_type; // 1 = string, 2 = bool, 3 = float, 4 = int
@@ -73,7 +75,7 @@ int optimizely_sdk_is_feature_enabled(int handle, char* feature_name,
                                       optimizely_user_attributes* attributes, char** error);
 
 // returns the string feature variable value
-char* optimizely_sdk_get_feature_variable_string(int handle, char* feature_name, char* variable_key, 
+char* optimizely_sdk_get_feature_variable_string(int handle, char* feature_name, char* variable_key,
                                                  optimizely_user_attributes* attributes, char** error);
 
 // returns the boolean feature variable value
@@ -82,7 +84,8 @@ int optimizely_sdk_get_feature_variable_boolean(int handle, char* feature_name, 
 
 // returns the double feature variable value
 double optimizely_sdk_get_feature_variable_double(int handle, char* feature_name, char* variable_key,
-                                                  optimizely_user_attributes* attributes, char** error);
+                                                  optimizely_user_attributes* attributes,
+                                                  char** error);
 
 // returns the integer feature variable value
 int optimizely_sdk_get_feature_variable_integer(int handle, char* feature_name, char* variable_key,
@@ -107,8 +110,7 @@ char** optimizely_sdk_get_enabled_features(int handle, optimizely_user_attribute
                                            int* count, char** error);
 
 // returns a list of the enabled feature variables, count contains the feature variable count
-// the caller must free all returned feature name strings
-// this only returns the names of the features 
+// the caller must free all returned feature name strings 
 // to get the value call optimizely_sdk_get_feature_variable_<type>()
 char** optimizely_sdk_get_all_feature_variables(int handle, char* feature_key,
                                                 optimizely_user_attributes* attributes,
