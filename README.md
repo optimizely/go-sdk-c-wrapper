@@ -26,11 +26,11 @@ int handle = optimizely_sdk_client("<sdk key>");
 
 See API for more details.
 
-### Feature Rollouts
+### Example: Feature Rollouts
 
 To see if a feature has been enabled initialize the SDK then call `is_feature_enabled` function.
 
-```c_cpp
+```c
 ...
 int handle = optimizely_sdk_client(sdkkey);
 if (handle == -1) {
