@@ -1,6 +1,6 @@
-# Optimizely C SDK
+# Optimizely Go SDK C Wrapper
 
-This repository contains a C SDK for use with Optimizely Full Stack and Optimizely Rollouts. This SDK is currently in Alpha.
+This repository contains a Go SDK C wrapper that enables the Go SDK to be used in C, C++ and other languages compiled to native code. This SDK is currently in Alpha.
 
 ## Installation
 
@@ -55,7 +55,7 @@ typedef struct optimizely_user_attribute {
 	void *data;
 } optimzely_user_attribute;
 
-typedef struct optimizely_user_attributes{
+typedef struct optimizely_user_attributes {
 	char *id;
 	int num_attributes;
 	struct optimizely_user_attribute *user_attribute_list;
@@ -97,9 +97,9 @@ char* optimizely_sdk_get_variation(int handle, char* experiment_key,
 
 // returns the feature variable for the specified feature_name and variable_key
 // the variable_type receives a string specifying the variable type
-char* optimizely_sdk_get_feature_variable(int handle, char* feature_name,
-                                          char* variable_key, optimizely_user_attributes* attributes,
-					  char** variable_type, char** error);
+char* optimizely_sdk_get_feature_variable(int handle, char* feature_name, char* variable_key,
+                                          optimizely_user_attributes* attributes,
+                                          char** variable_type, char** error);
 
 // activates the specified experiment_key
 char* optimizely_sdk_activate(int handle, char* experiment_key,
@@ -110,14 +110,13 @@ char** optimizely_sdk_get_enabled_features(int handle, optimizely_user_attribute
                                            int* count, char** error);
 
 // returns a list of the enabled feature variables, count contains the feature variable count
-// the caller must free all returned feature name strings 
-// to get the value call optimizely_sdk_get_feature_variable_<type>()
+// to get the value of a feature variable call optimizely_sdk_get_feature_variable_<type>()
 char** optimizely_sdk_get_all_feature_variables(int handle, char* feature_key,
                                                 optimizely_user_attributes* attributes,
                                                 int* enabled, int* count, char** error);
 
 // tracks the specified event_key
-char* optimizely_sdk_track(int handle, char* feature_key, optimizely_user_attributes* attributes,
+char* optimizely_sdk_track(int handle, char* event_key, optimizely_user_attributes* attributes,
                            float* value, char** error);
 ```
 
