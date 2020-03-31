@@ -23,6 +23,11 @@ import (
 	"testing"
 )
 
+func TestClientInitEmpty(t *testing.T) {
+	if optimizelySdkClient(os.Getenv("")) != -1 {
+		t.Fatal("failed to return invalid client when no SDKKEY is specified")
+	}
+}
 func TestClientInit(t *testing.T) {
 	c1 := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
 	c2 := optimizelySdkClient(os.Getenv("OPTIMIZELY_SDKKEY"))
@@ -52,7 +57,7 @@ func TestGetFeatureVariableBoolen(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// free all the sturct
+	// free all the structs
 	optimizely_sdk_delete_client(h)
 	t.Log("optimizelySdkGetFeatureVariableBoolean: ", rv)
 }
@@ -66,7 +71,7 @@ func TestGetFeatureVariableString(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// free all the sturct
+	// free all the structs
 	optimizely_sdk_delete_client(h)
 	t.Log("optimizelySdkGetFeatureVariableDouble: ", rv)
 }
@@ -80,7 +85,7 @@ func TestGetFeatureVariableDouble(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// free all the sturct
+	// free all the structs
 	optimizely_sdk_delete_client(h)
 	t.Log("optimizelySdkGetFeatureVariableDouble: ", rv)
 }
@@ -94,7 +99,7 @@ func TestGetFeatureVariableInteger(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// free all the sturct
+	// free all the structs
 	optimizely_sdk_delete_client(h)
 	t.Log("optimizelySdkGetFeatureVariableInteger: ", rv)
 }

@@ -92,7 +92,11 @@ func optimizely_sdk_client(sdkkey *C.char) int32 {
 	return handle
 }
 
+// returns a new SDK client or -1 on failure
 func optimizelySdkClient(sdkkey string) int32 {
+	if len(sdkkey) == 0 {
+		return -1
+	}
 	s := C.CString(sdkkey)
 	rv := optimizely_sdk_client(s)
 	C.free(unsafe.Pointer(s))
