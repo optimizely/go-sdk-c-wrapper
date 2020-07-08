@@ -54,7 +54,7 @@ type optimizelyClientMap struct {
 
 var (
 	optlyClients *optimizelyClientMap
-	logger       = logging.GetLogger("CSDK")
+	logger       = logging.GetLogger("CSDK", "")
 )
 
 func init() {
@@ -657,7 +657,7 @@ func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char,
 		return nil
 	}
 
-	bEnabled, varMap, e := optlyClient.GetAllFeatureVariables(C.GoString(feature_key), *u)
+	bEnabled, varMap, e := optlyClient.GetAllFeatureVariablesWithDecision(C.GoString(feature_key), *u)
 	if e != nil {
 		*err = C.CString(e.Error())
 		return nil
