@@ -54,7 +54,7 @@ type optimizelyClientMap struct {
 
 var (
 	optlyClients *optimizelyClientMap
-	logger       = logging.GetLogger("CSDK")
+	logger       = logging.GetLogger("CSDK", "")
 )
 
 func init() {
@@ -119,7 +119,7 @@ func convertUserContext(attribs *C.struct_optimizely_user_attributes) (*entities
 
 	attrCount := (int)(listPtr.num_attributes)
 	if attrCount > 0 {
-		attrList := (*[1 << 30]C.struct_optimizely_user_attribute)(unsafe.Pointer(listPtr.user_attribute_list))[:attrCount:attrCount]
+		attrList := (*[1 << 27]C.struct_optimizely_user_attribute)(unsafe.Pointer(listPtr.user_attribute_list))[:attrCount:attrCount]
 
 		for i := 0; i < int(attrCount); i++ {
 			name := C.GoString(attrList[i].name)
@@ -628,7 +628,7 @@ func optimizely_sdk_get_enabled_features(handle int32, attribs *C.struct_optimiz
 
 	cArr := C.malloc(C.size_t(len(featureList)) * C.size_t(unsafe.Sizeof(uintptr(0))))
 
-	a := (*[1<<30 - 1]*C.char)(cArr) // a is a pointer to a the c array
+	a := (*[1<<29 - 1]*C.char)(cArr) // a is a pointer to a the c array
 
 	for idx, substring := range featureList {
 		a[idx] = C.CString(substring)
@@ -657,7 +657,7 @@ func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char,
 		return nil
 	}
 
-	bEnabled, varMap, e := optlyClient.GetAllFeatureVariables(C.GoString(feature_key), *u)
+	bEnabled, varMap, e := optlyClient.GetAllFeatureVariablesWithDecision(C.GoString(feature_key), *u)
 	if e != nil {
 		*err = C.CString(e.Error())
 		return nil
@@ -669,7 +669,7 @@ func optimizely_sdk_get_all_feature_variables(handle int32, feature_key *C.char,
 	/* now allocate the number of necessary structs and set the data */
 	cArr := C.malloc(C.size_t(len(varMap)) * C.size_t(unsafe.Sizeof(uintptr(0))))
 
-	a := (*[1<<30 - 1]*C.char)(cArr) // a is a pointer to a the c array
+	a := (*[1<<29 - 1]*C.char)(cArr) // a is a pointer to a the c array
 
 	i := 0
 	for key := range varMap {
